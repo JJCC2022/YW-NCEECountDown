@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NCEECountDown));
             this.Time = new System.Windows.Forms.Label();
             this.run = new System.Windows.Forms.Timer(this.components);
             this.label1 = new System.Windows.Forms.Label();
@@ -51,12 +52,11 @@
             this.Time.BackColor = System.Drawing.Color.Transparent;
             this.Time.Cursor = System.Windows.Forms.Cursors.Default;
             this.Time.Font = new System.Drawing.Font("微软雅黑", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.Time.Location = new System.Drawing.Point(64, 93);
-            this.Time.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Time.Location = new System.Drawing.Point(48, 74);
             this.Time.Name = "Time";
-            this.Time.Size = new System.Drawing.Size(508, 80);
+            this.Time.Size = new System.Drawing.Size(442, 64);
             this.Time.TabIndex = 0;
-            this.Time.Text = "XXX天XX时XX分";
+            this.Time.Text = "NCEECountDown";
             this.Time.Click += new System.EventHandler(this.Time_Click);
             // 
             // run
@@ -69,10 +69,9 @@
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("微软雅黑", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.Location = new System.Drawing.Point(184, 184);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(138, 147);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(220, 30);
+            this.label1.Size = new System.Drawing.Size(183, 25);
             this.label1.TabIndex = 6;
             this.label1.Text = "奋勇拼搏，决战高考";
             this.label1.Click += new System.EventHandler(this.label1_Click);
@@ -80,10 +79,10 @@
             // progressBar1
             // 
             this.progressBar1.Location = new System.Drawing.Point(0, 0);
-            this.progressBar1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.progressBar1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.progressBar1.Maximum = 4000;
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(649, 10);
+            this.progressBar1.Size = new System.Drawing.Size(487, 8);
             this.progressBar1.TabIndex = 9;
             this.progressBar1.Visible = false;
             // 
@@ -98,21 +97,21 @@
             this.Title.BackColor = System.Drawing.Color.Transparent;
             this.Title.Cursor = System.Windows.Forms.Cursors.Default;
             this.Title.Font = new System.Drawing.Font("微软雅黑", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.Title.Location = new System.Drawing.Point(64, 13);
-            this.Title.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Title.Location = new System.Drawing.Point(48, 10);
             this.Title.Name = "Title";
-            this.Title.Size = new System.Drawing.Size(484, 80);
+            this.Title.Size = new System.Drawing.Size(261, 64);
             this.Title.TabIndex = 10;
-            this.Title.Text = "距 离 高 考 仅 剩";
+            this.Title.Text = "欢 迎 使 用";
             this.Title.Click += new System.EventHandler(this.Title_Click);
             // 
             // LPic
             // 
             this.LPic.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.LPic.BackColor = System.Drawing.Color.Transparent;
-            this.LPic.Location = new System.Drawing.Point(12, 114);
+            this.LPic.Location = new System.Drawing.Point(9, 91);
+            this.LPic.Margin = new System.Windows.Forms.Padding(2);
             this.LPic.Name = "LPic";
-            this.LPic.Size = new System.Drawing.Size(100, 100);
+            this.LPic.Size = new System.Drawing.Size(75, 80);
             this.LPic.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.LPic.TabIndex = 11;
             this.LPic.TabStop = false;
@@ -122,9 +121,10 @@
             // 
             this.RPic.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.RPic.BackColor = System.Drawing.Color.Transparent;
-            this.RPic.Location = new System.Drawing.Point(533, 114);
+            this.RPic.Location = new System.Drawing.Point(400, 91);
+            this.RPic.Margin = new System.Windows.Forms.Padding(2);
             this.RPic.Name = "RPic";
-            this.RPic.Size = new System.Drawing.Size(100, 100);
+            this.RPic.Size = new System.Drawing.Size(75, 80);
             this.RPic.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.RPic.TabIndex = 12;
             this.RPic.TabStop = false;
@@ -133,9 +133,10 @@
             // TTPic
             // 
             this.TTPic.BackColor = System.Drawing.Color.Transparent;
-            this.TTPic.Location = new System.Drawing.Point(78, 16);
+            this.TTPic.Location = new System.Drawing.Point(58, 13);
+            this.TTPic.Margin = new System.Windows.Forms.Padding(2);
             this.TTPic.Name = "TTPic";
-            this.TTPic.Size = new System.Drawing.Size(448, 61);
+            this.TTPic.Size = new System.Drawing.Size(336, 49);
             this.TTPic.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.TTPic.TabIndex = 13;
             this.TTPic.TabStop = false;
@@ -144,10 +145,11 @@
             // 
             // OMN
             // 
-            this.OMN.BackColor = System.Drawing.Color.Maroon;
-            this.OMN.Location = new System.Drawing.Point(12, 12);
+            this.OMN.BackColor = System.Drawing.Color.Transparent;
+            this.OMN.Location = new System.Drawing.Point(9, 10);
+            this.OMN.Margin = new System.Windows.Forms.Padding(2);
             this.OMN.Name = "OMN";
-            this.OMN.Size = new System.Drawing.Size(24, 24);
+            this.OMN.Size = new System.Drawing.Size(32, 32);
             this.OMN.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.OMN.TabIndex = 14;
             this.OMN.TabStop = false;
@@ -158,11 +160,11 @@
             // 
             // NCEECountDown
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ClientSize = new System.Drawing.Size(645, 223);
+            this.ClientSize = new System.Drawing.Size(484, 178);
             this.Controls.Add(this.OMN);
             this.Controls.Add(this.TTPic);
             this.Controls.Add(this.RPic);
@@ -173,8 +175,9 @@
             this.Controls.Add(this.progressBar1);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;
             this.Name = "NCEECountDown";
             this.Opacity = 0.95D;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -50,11 +51,6 @@ namespace NCEECountDown
             InitializeComponent();
         }
 
-        [DllImport("dwmapi.dll")]
-        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
-        private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
-        private const int DWMWCP_ROUND = 3;
-
         private List<string> GetSubFolders(string folderPath)
         {
             List<string> subFolders = new List<string>();
@@ -63,7 +59,7 @@ namespace NCEECountDown
                 string[] Directories = Directory.GetDirectories(folderPath);
                 subFolders.AddRange(Directories);
             }
-            catch (Exception ex) { }
+            catch (Exception) { }
             return subFolders;
         }
 
@@ -89,9 +85,10 @@ namespace NCEECountDown
             {
                 File.Create(AppDomain.CurrentDomain.BaseDirectory + "Signs.txt").Close();
             }
-            ThemeChange();
             //Launch.Start();
             await FadeInAsync();
+            Title.Text = "距 离 高 考 还 有";
+            ThemeChange();
             run.Start();
             Launch.Stop();
             Status(sender, e);
@@ -145,12 +142,12 @@ namespace NCEECountDown
             else
             {
                 Class = false;
-                if(Opacity<=0)await FadeInAsync();
+                if (Opacity <= 0) await FadeInAsync();
             }
             if (Class & Mode == 1)
             {
-                if (this.Opacity > 0) this.Opacity -= 0.1;
-                else
+                if (this.Opacity >=1) await FadeOutAsync();
+                else if (this.Opacity <= 0.5 & this.Opacity > 0)
                 {
                     ThemeChange();
                     if (NameListLines != 0)
@@ -162,8 +159,14 @@ namespace NCEECountDown
             }
             else if (this.Location != TargetLoc & !Running & !Mini & Mode == 1) await FadeInAsync();
             Status(sender, e);
-            int cornerPreference = DWMWCP_ROUND;
-            DwmSetWindowAttribute(this.Handle, DWMWA_WINDOW_CORNER_PREFERENCE, ref cornerPreference, sizeof(int));
+            int R = 10;
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(this.Width - R, this.Height - R, R, R, 0, 90);
+            path.AddArc(0, this.Height - R, R, R, 90, 90);
+            path.AddArc(0, 0, R, R, 180, 90);
+            path.AddArc(this.Width - R, 0, R, R, 270, 90);
+            path.CloseAllFigures();
+            this.Region = new Region(path);
         }
         bool Running = false;
         private async Task FadeInAsync()
@@ -172,7 +175,15 @@ namespace NCEECountDown
             Running = true;
             try
             {
-                if (this.Opacity <= 0) this.Location = new Point(Screen.PrimaryScreen.Bounds.Width / 2 - this.Width / 2, -this.Height);
+                if (this.Opacity <= 0)
+                {
+                    this.Location = new Point(Screen.PrimaryScreen.Bounds.Width / 2 - this.Width / 2, -this.Height);
+                    if (NameListLines != 0)
+                    {
+                        int RanNum = new Random().Next(0, NameListLines);
+                        label1.Text = NameList[RanNum];
+                    }
+                }
                 while (this.Top < this.Height / 2 || this.Opacity < 1.0)
                 {
                     if (this.Location != TargetLoc)
@@ -190,8 +201,20 @@ namespace NCEECountDown
             finally { Running = false; }
         }
 
-        private void FadeOut(object sender, EventArgs e)
+        private async Task FadeOutAsync()
         {
+            if (Running) { label1.Text = "警告：程序负载过高"; return; }
+            Running = true;
+            try
+            {
+                while (this.Opacity > 0)
+                {
+                    this.Opacity = Math.Max(0.0, this.Opacity - 0.01);
+                    await Task.Delay(5);
+                }
+            }
+            finally { Running = false; }
+
         }
 
         private TimeSpan GetTimeUntilJune7()
@@ -275,7 +298,7 @@ namespace NCEECountDown
             {
                 this.Size = new Size(Math.Max(MaxWidth + 30, label1.Width + LPic.Width + RPic.Width + 30), Time.Height + Title.Height + label1.Height * 7 / 4);
                 //label1.Text = this.Location.ToString() + "/" + TargetLoc.ToString();测试
-                if (this.Location != TargetLoc & Mode == 1&this.Opacity==1)
+                if (this.Location != TargetLoc & Mode == 1 & this.Opacity == 1)
                 {
                     this.Location = TargetLoc;
                 }
@@ -329,6 +352,10 @@ namespace NCEECountDown
 
         private void NCEECountDown_Click(object sender, EventArgs e)
         {
+        }
+
+        private void LPic_Click(object sender, EventArgs e)
+        {
             MouseEventArgs Mouse_e = (MouseEventArgs)e;
             if (Mouse_e.Button == MouseButtons.Left)
             {
@@ -340,14 +367,9 @@ namespace NCEECountDown
             }
         }
 
-        private void LPic_Click(object sender, EventArgs e)
-        {
-            NCEECountDown_Click(sender, e);
-        }
-
         private void RPic_Click(object sender, EventArgs e)
         {
-            NCEECountDown_Click(sender, e);
+            LPic_Click(sender, e);
         }
 
         private void Title_Click(object sender, EventArgs e)
@@ -382,7 +404,7 @@ namespace NCEECountDown
                     string BGC = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\BGC.ini";
                     string TTP = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\Title.png";
                     string OMNI = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\OMN.ico";
-                    string FTU= AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\Font.ttf";
+                    string FTU = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\Font.ttf";
                     if (File.Exists(LeftPath))
                     {
                         LPic.Image = Image.FromFile(LeftPath);
@@ -396,9 +418,8 @@ namespace NCEECountDown
                     if (File.Exists(OMNI))
                     {
                         OMN.Image = Image.FromFile(OMNI);
-                        OMN.BackColor = Color.Transparent;
                     }
-                    else { OMN.Image = null; OMN.BackColor = Color.DarkRed; }
+                    else { OMN.Image =this.Icon.ToBitmap();  }
                     if (File.Exists(TTP))
                     {
                         TTPic.Visible = true;
@@ -409,7 +430,7 @@ namespace NCEECountDown
                     {
                         //Time.Font= new Font(new PrivateFontCollection().AddFontFile(FTU).Families[0], Time.Font.Size, Time.Font.Style);
                     }
-                    
+
                     if (File.Exists(BGC))
                     {
                         string colorStr = File.ReadAllText(BGC).Trim();
