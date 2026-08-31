@@ -3,7 +3,7 @@
 
 ![npm downloads](https://img.shields.io/github/release/JJCC2022/YW-NCEECountDown) ![npm downloads](https://img.shields.io/github/license/JJCC2022/YW-NCEECountDown.svg) ![npm downloads](https://img.shields.io/badge/Windows-Vista_to_11-123)
 
-**使用说明视频→**![【开源】也许是最小的高考倒计日软件](https://www.bilibili.com/video/BV1TJE862Ehh)
+**使用说明视频→**[【开源】也许是最小的高考倒计日软件](https://www.bilibili.com/video/BV1TJE862Ehh)
 
 
 # **窗体模式**
