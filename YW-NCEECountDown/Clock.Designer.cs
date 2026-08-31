@@ -52,11 +52,11 @@
             this.Time.BackColor = System.Drawing.Color.Transparent;
             this.Time.Cursor = System.Windows.Forms.Cursors.Default;
             this.Time.Font = new System.Drawing.Font("微软雅黑", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.Time.Location = new System.Drawing.Point(48, 74);
+            this.Time.Location = new System.Drawing.Point(107, 56);
             this.Time.Name = "Time";
-            this.Time.Size = new System.Drawing.Size(442, 64);
+            this.Time.Size = new System.Drawing.Size(267, 64);
             this.Time.TabIndex = 0;
-            this.Time.Text = "NCEECountDown";
+            this.Time.Text = "高考倒计时";
             this.Time.Click += new System.EventHandler(this.Time_Click);
             // 
             // run
@@ -69,11 +69,11 @@
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("微软雅黑", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.Location = new System.Drawing.Point(138, 147);
+            this.label1.Location = new System.Drawing.Point(89, 120);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(183, 25);
+            this.label1.Size = new System.Drawing.Size(292, 25);
             this.label1.TabIndex = 6;
-            this.label1.Text = "奋勇拼搏，决战高考";
+            this.label1.Text = "右击上方倒计时可查看使用说明~";
             this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // progressBar1
@@ -96,10 +96,10 @@
             this.Title.AutoSize = true;
             this.Title.BackColor = System.Drawing.Color.Transparent;
             this.Title.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Title.Font = new System.Drawing.Font("微软雅黑", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.Title.Location = new System.Drawing.Point(48, 10);
+            this.Title.Font = new System.Drawing.Font("微软雅黑", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.Title.Location = new System.Drawing.Point(110, 10);
             this.Title.Name = "Title";
-            this.Title.Size = new System.Drawing.Size(261, 64);
+            this.Title.Size = new System.Drawing.Size(190, 46);
             this.Title.TabIndex = 10;
             this.Title.Text = "欢 迎 使 用";
             this.Title.Click += new System.EventHandler(this.Title_Click);
@@ -108,7 +108,7 @@
             // 
             this.LPic.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.LPic.BackColor = System.Drawing.Color.Transparent;
-            this.LPic.Location = new System.Drawing.Point(9, 91);
+            this.LPic.Location = new System.Drawing.Point(9, 67);
             this.LPic.Margin = new System.Windows.Forms.Padding(2);
             this.LPic.Name = "LPic";
             this.LPic.Size = new System.Drawing.Size(75, 80);
@@ -121,7 +121,7 @@
             // 
             this.RPic.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.RPic.BackColor = System.Drawing.Color.Transparent;
-            this.RPic.Location = new System.Drawing.Point(400, 91);
+            this.RPic.Location = new System.Drawing.Point(400, 67);
             this.RPic.Margin = new System.Windows.Forms.Padding(2);
             this.RPic.Name = "RPic";
             this.RPic.Size = new System.Drawing.Size(75, 80);
@@ -133,7 +133,7 @@
             // TTPic
             // 
             this.TTPic.BackColor = System.Drawing.Color.Transparent;
-            this.TTPic.Location = new System.Drawing.Point(58, 13);
+            this.TTPic.Location = new System.Drawing.Point(59, 12);
             this.TTPic.Margin = new System.Windows.Forms.Padding(2);
             this.TTPic.Name = "TTPic";
             this.TTPic.Size = new System.Drawing.Size(336, 49);
@@ -164,7 +164,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ClientSize = new System.Drawing.Size(484, 178);
+            this.ClientSize = new System.Drawing.Size(484, 154);
             this.Controls.Add(this.OMN);
             this.Controls.Add(this.TTPic);
             this.Controls.Add(this.RPic);
@@ -183,6 +183,7 @@
             this.Opacity = 0.95D;
             this.ShowInTaskbar = false;
             this.Text = "高考倒计时";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.NCEECountDown_FormClosing);
             this.Load += new System.EventHandler(this.NCEECountDown_Load);
             this.Click += new System.EventHandler(this.NCEECountDown_Click);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.NCEECountDown_KeyDown);

@@ -3,22 +3,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
 
 namespace NCEECountDown
 {
     public partial class NCEECountDown : Form
     {
-        int mode = 5;
-        bool Class = false;
+        int mode = 5;//倒计时显示模式
+        int ChangeTime = 5;//每多少分钟换皮肤m
+        int RunTime = 0;//run已经运行时长ms
+        bool Class = false;//联动上课状态
         string[] NameList;
         int NameListLines = 0;
-        int Mode = 1;
+        int FormMode = 2;//窗口模式
         bool Mini = false;
         List<string> SubFolderPaths;
         private Point TargetLoc => new Point(Screen.PrimaryScreen.Bounds.Width / 2 - this.Width / 2, this.Height / 2);
@@ -70,6 +75,7 @@ namespace NCEECountDown
         LPic:AppDomain.CurrentDomain.BaseDirectory + "Bg\\X\\Left.png"
         RPic:AppDomain.CurrentDomain.BaseDirectory + "Bg\\X\\Right.png"
         this.BackColor:AppDomain.CurrentDomain.BaseDirectory + "Bg\\X\\BGC.ini"（RGB三行，范围0-255，UTF-8编码）
+        下个版本要做！窗体宽度进一步适配；程序位置保存；字体自动还原。
          */
         private async void NCEECountDown_Load(object sender, EventArgs e)
         {
@@ -109,12 +115,45 @@ namespace NCEECountDown
                 sw.Stop();
                 NameListLines = lines;
                 NameList = File.ReadAllLines(Thread.GetDomain().BaseDirectory + "Signs.txt");
+                try
+                {
+                    if (File.Exists(Thread.GetDomain().BaseDirectory + "NCEEConfig.ini"))
+                    {
+                        var ini = new IniReader(Thread.GetDomain().BaseDirectory + "NCEEConfig.ini");
+                        mode = ini.GetInt("mode", 1);
+                        FormMode = ini.GetInt("FormMode", 2);
+                        //Anchor
+                    }
+                }
+                catch (Exception) { }
             }
+            while (!this.IsDisposed && !this.Disposing)
+            {
+                if (!Mini)
+                {
+                    ThemeChange();
+                    if (NameListLines != 0)
+                    {
+                        int RanNum = new Random().Next(0, NameListLines);
+                        label1.Text = NameList[RanNum];
+                    }
 
+                    // 使用 Task.Delay 替代同步阻塞或 Task.Run+Sleep，避免占用线程池与阻塞 UI
+                    int delayMs = Math.Max(0, ChangeTime) * 60 * 1000;
+                    if (delayMs == 0) delayMs = 1000; // 防止意外的 0 值导致紧凑循环
+                    await Task.Delay(delayMs);
+                }
+                else
+                {
+                    // Mini 模式下每 200ms 检查一次状态，避免忙等
+                    await Task.Delay(200);
+                }
+            }
         }
 
         private async void run_Tick(object sender, EventArgs e)
         {
+            RunTime += run.Interval;
             TimeSpan ts = GetTimeUntilJune7();
             int days = ts.Days;
             int hours = ts.Hours;
@@ -124,12 +163,12 @@ namespace NCEECountDown
             M = hours < 10 & hours > 0 ? "0" + hours : hours.ToString();
             S = minutes < 10 ? "0" + minutes : minutes.ToString();
             C = seconds < 10 ? "0" + seconds : seconds.ToString();
-            percent = Math.Round((double)(days * 1440 * 60 + hours * 60 * 60 + minutes * 60 + seconds) / 5256 / 60, 5);
+            percent = Math.Round((double)(days * 1440 * 60 + hours * 60 * 60 + minutes * 60 + seconds) / 5256 / 60, 2);
             string iniPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "JJClock.ini");
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "JJClock.ini"))
             {
                 Class = true;
-                if (Mini & Mode == 1)
+                if (Mini & FormMode == 1)
                 {
                     Mini = false;
                     LPic.Visible = true;
@@ -144,20 +183,11 @@ namespace NCEECountDown
                 Class = false;
                 if (Opacity <= 0) await FadeInAsync();
             }
-            if (Class & Mode == 1)
+            if (Class & FormMode == 1)
             {
-                if (this.Opacity >=1) await FadeOutAsync();
-                else if (this.Opacity <= 0.5 & this.Opacity > 0)
-                {
-                    ThemeChange();
-                    if (NameListLines != 0)
-                    {
-                        int RanNum = new Random().Next(0, NameListLines);
-                        label1.Text = NameList[RanNum];
-                    }
-                }
+                if (this.Opacity >= 1) await FadeOutAsync();
             }
-            else if (this.Location != TargetLoc & !Running & !Mini & Mode == 1) await FadeInAsync();
+            else if (this.Location != TargetLoc & !Running & !Mini & FormMode == 1) await FadeInAsync();
             Status(sender, e);
             int R = 10;
             GraphicsPath path = new GraphicsPath();
@@ -262,7 +292,7 @@ namespace NCEECountDown
                 NameList = File.ReadAllLines(Thread.GetDomain().BaseDirectory + "Signs.txt");
             }
         }
-
+        private int PrevFormMode = -1;
         private void Status(object sender, EventArgs e)//UI适配
         {
             if (mode == 1)
@@ -275,21 +305,29 @@ namespace NCEECountDown
             }
             if (mode == 3)
             {
-                Time.Text = H + "天" + M + "时" + S + "分";
+                Time.Text = H + "天" + M + "时";
             }
             if (mode == 4)
             {
-                Time.Text = H + "天" + M + "时" + S + "分(" + percent.ToString() + "%)";
+                Time.Text = H + "天" + M + "时(" + percent.ToString() + "%)";
             }
             if (mode == 5)
             {
-                Time.Text = H + "天" + M + "时" + S + "分" + C + "秒";
+                Time.Text = H + "天" + M + "时" + S + "分";
             }
             if (mode == 6)
             {
+                Time.Text = H + "天" + M + "时" + S + "分(" + percent.ToString() + "%)";
+            }
+            if (mode == 7)
+            {
+                Time.Text = H + "天" + M + "时" + S + "分" + C + "秒";
+            }
+            if (mode == 8)
+            {
                 Time.Text = H + "天" + M + "时" + S + "分" + C + "秒(" + percent.ToString() + "%)";
             }
-            int MaxWidth = Math.Max(Time.Width * 4 / 3, Title.Width * 4 / 3);
+            int MaxWidth = Math.Max(Time.Width * 3 / 2, Title.Width * 4 / 3);
             if (Mini)
             {
 
@@ -298,7 +336,7 @@ namespace NCEECountDown
             {
                 this.Size = new Size(Math.Max(MaxWidth + 30, label1.Width + LPic.Width + RPic.Width + 30), Time.Height + Title.Height + label1.Height * 7 / 4);
                 //label1.Text = this.Location.ToString() + "/" + TargetLoc.ToString();测试
-                if (this.Location != TargetLoc & Mode == 1 & this.Opacity == 1)
+                if (this.Location != TargetLoc & FormMode == 1 & this.Opacity == 1)
                 {
                     this.Location = TargetLoc;
                 }
@@ -310,9 +348,20 @@ namespace NCEECountDown
             TTPic.Size = Title.Size;
             TTPic.Location = Title.Location;
             Time.Location = new Point(this.Width / 2 - Time.Width / 2, Title.Bottom);
-
-            if (Mode == 1) SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-            else if (Mode == 2) SetWindowPos(this.Handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            if (PrevFormMode != FormMode)
+            {
+                if (FormMode == 1)
+                {
+                    SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                }
+                else if (FormMode == 2)
+                {
+                    SetWindowPos(this.Handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                }
+                PrevFormMode = FormMode;
+            }
+            //if (FormMode == 1) SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            //else if (FormMode == 2) SetWindowPos(this.Handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -341,12 +390,12 @@ namespace NCEECountDown
             if (Mouse_e.Button == MouseButtons.Left)
             {
                 mode += 1;
-                if (mode == 7) mode = 1;
+                if (mode == 9) mode = 1;
                 Status(sender, e);
             }
             else if (Mouse_e.Button == MouseButtons.Right)
             {
-                Process.Start("https://github.com/JJCC2022/YW-NCEECountDown/blob/main/README.md");
+                Process.Start("https://github.com/JJCC2022/YW-NCEECountDown/blob/master/README.md");
             }
         }
 
@@ -389,22 +438,23 @@ namespace NCEECountDown
         {
             Title_Click(sender, e);
         }
-
+        PrivateFontCollection PrivateFonts = new PrivateFontCollection();
+        int TheNum = 0;
         private void ThemeChange()
         {
             if (Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "Bg\\1"))
             {
                 SubFolderPaths = GetSubFolders(AppDomain.CurrentDomain.BaseDirectory + "Bg");
-                Random BgRan = new Random();
                 if (SubFolderPaths.Count != 0)
                 {
-                    int RanNum = BgRan.Next(0, SubFolderPaths.Count);
-                    string LeftPath = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\Left.png";
-                    string RightPath = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\Right.png";
-                    string BGC = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\BGC.ini";
-                    string TTP = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\Title.png";
-                    string OMNI = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\OMN.ico";
-                    string FTU = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (RanNum + 1) + "\\Font.ttf";
+                    if (TheNum < SubFolderPaths.Count) TheNum += 1;
+                    else TheNum = 1;
+                    string LeftPath = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (TheNum) + "\\Left.png";
+                    string RightPath = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (TheNum) + "\\Right.png";
+                    string BGC = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (TheNum) + "\\BGC.ini";
+                    string TTP = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (TheNum) + "\\Title.png";
+                    string OMNI = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (TheNum) + "\\OMN.ico";
+                    string FTU = AppDomain.CurrentDomain.BaseDirectory + "Bg\\" + (TheNum) + "\\Font.ttf";
                     if (File.Exists(LeftPath))
                     {
                         LPic.Image = Image.FromFile(LeftPath);
@@ -419,7 +469,7 @@ namespace NCEECountDown
                     {
                         OMN.Image = Image.FromFile(OMNI);
                     }
-                    else { OMN.Image =this.Icon.ToBitmap();  }
+                    else { OMN.Image = this.Icon.ToBitmap(); }
                     if (File.Exists(TTP))
                     {
                         TTPic.Visible = true;
@@ -428,7 +478,13 @@ namespace NCEECountDown
                     else TTPic.Visible = false;
                     if (File.Exists(FTU))
                     {
-                        //Time.Font= new Font(new PrivateFontCollection().AddFontFile(FTU).Families[0], Time.Font.Size, Time.Font.Style);
+                        PrivateFonts = new PrivateFontCollection();
+                        PrivateFonts.AddFontFile(FTU);
+                        var family = PrivateFonts.Families.FirstOrDefault();
+                        if (family != null)
+                        {
+                            Time.Font = new Font(family, Time.Font.Size, Time.Font.Style);
+                        }
                     }
 
                     if (File.Exists(BGC))
@@ -502,7 +558,7 @@ namespace NCEECountDown
             PointMouse = e.Location;
             Location1 = this.Location;
             Location2 = this.Location;
-            if (Mode == 2 || Mini) IsMouseDown = true;
+            if (FormMode == 2 || Mini) IsMouseDown = true;
             MoveDistanceX = 0;
             MoveDistanceY = 0;
         }
@@ -550,8 +606,8 @@ namespace NCEECountDown
                 }
                 else if (Mouse_e.Button == MouseButtons.Right)
                 {
-                    if (Mode <= 1) Mode += 1;
-                    else Mode = 1;
+                    if (FormMode <= 1) FormMode += 1;
+                    else FormMode = 1;
                 }
             }
         }
@@ -560,5 +616,79 @@ namespace NCEECountDown
         {
             Application.Exit();
         }
+
+        private void NCEECountDown_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            //处理配置保存操作
+            try
+            {
+                if (File.Exists(Thread.GetDomain().BaseDirectory + "NCEEConfig.ini"))
+                {
+                    File.Delete(Thread.GetDomain().BaseDirectory + "NCEEConfig.ini");
+                }
+
+                StringBuilder iniContent = new StringBuilder();
+                iniContent.AppendLine("[Pinned]这是高考倒计时的配置文件，请不要随意更改以防程序出现不稳定问题~");
+                iniContent.AppendLine("[Pinned]Application=" + Thread.GetDomain().BaseDirectory + Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName));
+                iniContent.AppendLine("[Pinned]Version=" + Assembly.GetExecutingAssembly().GetName().Version);
+                iniContent.AppendLine("[Pinned]CreateTime=" + DateTime.Now.ToFileTime().ToString());
+                iniContent.AppendLine("mode=" + mode);
+                iniContent.AppendLine("FormMode=" + FormMode);
+                //iniContent.AppendLine("AnchorX=" + ？);取左右距边界最小值，用正负区分
+                //iniContent.AppendLine("AnchorY=" + ？);取上下距边界最小值，用正负区分
+                File.WriteAllText(Thread.GetDomain().BaseDirectory + "NCEEConfig.ini", iniContent.ToString(), Encoding.UTF8);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        public class IniReader
+        {
+            private Dictionary<string, string> _data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            public IniReader(string filePath)
+            {
+                if (File.Exists(filePath))
+                {
+                    foreach (var line in File.ReadAllLines(filePath).Where(l => !string.IsNullOrWhiteSpace(l) && !l.StartsWith(";")))
+                    {
+                        var parts = line.Split('=');
+                        if (parts.Length == 2)
+                            _data[parts[0].Trim()] = parts[1].Trim().Trim('"');
+                    }
+                }
+            }
+
+            public string this[string key] => _data.TryGetValue(key, out var v) ? v : null;
+            public string Get(string key, string def = null) => _data.TryGetValue(key, out var v) ? v : def;
+            public int GetInt(string key, int def = 0) => int.TryParse(Get(key), out var v) ? v : def;
+            public bool GetBool(string key, bool def = false)
+            {
+                var val = Get(key)?.ToLower();
+                if (val == "true" || val == "1" || val == "yes" || val == "on") return true;
+                if (val == "false" || val == "0" || val == "no" || val == "off") return false;
+                return def;
+            }
+            public DateTime GetDateTime(string key, DateTime defaultValue)
+            {
+                string value = Get(key);
+                if (string.IsNullOrEmpty(value))
+                    return defaultValue;
+                if (long.TryParse(value, out long fileTime))
+                {
+                    try
+                    {
+                        return DateTime.FromFileTime(fileTime);
+                    }
+                    catch
+                    {
+                        return defaultValue;
+                    }
+                }
+                return defaultValue;
+            }
+        }
+
     }
 }
